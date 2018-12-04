@@ -1,0 +1,23 @@
+{
+  "name": "scout-backend",
+  "version": "0.0.0",
+  "description": "Backend for scout",
+  "main": "src/main.ts",
+  "repository": "https://github.com/mannrobo/scout-backend",
+  "author": "Brendan McGuire",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "firebase-admin": "^6.3.0",
+    "koa": "^2.6.2",
+    "koa-router": "^7.4.0"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.0.47",
+    "@types/koa-router": "^7.0.35",
+    "nodemon": "^1.18.7"
+  },
+  "scripts": {
+    "dev": "nodemon"
+  }
+}
