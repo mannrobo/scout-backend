@@ -10,7 +10,11 @@ const app = new Koa();
 const router = new Router();
 
 async function initalize() {
+  admin.firestore().settings({ timestampsInSnapshots: true });
+
   endpoints.invite(router, app);
+
+  app.use(router.routes()).use(router.allowedMethods());
 
   // 404 Message
   app.use(ctx => {
