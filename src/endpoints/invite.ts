@@ -9,14 +9,22 @@ export default (router: Router, app: Koa) => {
 
   // Use invite code
   router.get("/invite/use", async (ctx, next) => {
-    const { code, jwt } = ctx.query;
-    if (!code)
+    let { code, jwt } = ctx.query;
+
+    if (!code) {
       ctx.body = error("invite.no.code", "No invite code was supplied");
-    if (!jwt)
+      return;
+    }
+    if (!jwt) {
       ctx.body = error(
         "invite.no.jwt",
         "No JWT was supplied. Try signing in again"
       );
+      return;
+    }
+
+    // Decodes Base64 encoding
+    jwt = Buffer.from(jwt, "base64").toString();
 
     // Get the user making the request
     let decodedToken = await auth
@@ -29,7 +37,6 @@ export default (router: Router, app: Koa) => {
           ))
       );
     if (decodedToken.hasOwnProperty("error")) {
-      ctx.body = error("invite.invalid.jwt", "Invalid JWT");
       return;
     }
     decodedToken = decodedToken as admin.auth.DecodedIdToken;
@@ -50,7 +57,7 @@ export default (router: Router, app: Koa) => {
     }
     const team = invite.docs[0].id;
 
-    return addUserToTeam(decodedToken.uid, team, ctx);
+    ctx.body = await addUserToTeam(decodedToken.uid, team, ctx);
   });
 };
 
@@ -82,6 +89,18 @@ async function addUserToTeam(
       "User already part of this team. This is a no-op"
     );
   }
+
+  // Add the user to the approved invite lisrt
+  const invite = admin
+    .firestore()
+    .collection("invite")
+    .doc(team);
+
+  const inviteData = (await invite.get()).data() as FirebaseFirestore.DocumentData;
+
+  await invite.update({
+    approved: [...inviteData.approved, uid]
+  });
 
   // Finally, push the user to the end of the team
   return (
